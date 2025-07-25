@@ -11,8 +11,7 @@ Route10Mons:
 		db 17,SPEAROW
 		db 13,EKANS
 		db 17,EKANS
-	ENDC
-	IF DEF(_BLUE)
+	ELSE
 		db 16,VOLTORB
 		db 16,SPEAROW
 		db 14,VOLTORB

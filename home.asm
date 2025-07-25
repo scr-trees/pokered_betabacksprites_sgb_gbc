@@ -104,9 +104,9 @@ Start::
 	xor a
 	jr .ok
 .gbc
-	ld a, 0
+	ld a, 1	;gbctest - set the marker for being in gbc mode
 .ok
-	ld [wGBC], a
+	ld [hGBC], a
 	jp Init
 
 
@@ -713,46 +713,23 @@ PrintBCDDigit::
 ; assumes the corresponding mon header is already loaded
 ; hl contains offset to sprite pointer ($b for front or $d for back)
 UncompressMonSprite::
-	ld bc, wMonHeader
-	add hl, bc
-	ld a, [hli]
-	ld [wSpriteInputPtr], a    ; fetch sprite input pointer
-	ld a, [hl]
-	ld [wSpriteInputPtr+1], a
-; define (by index number) the bank that a pokemon's image is in
-; index = Mew, bank 1
-; index = Kabutops fossil, bank $B
-; index < $1F, bank 9
-; $1F ≤ index < $4A, bank $A
-; $4A ≤ index < $74, bank $B
-; $74 ≤ index < $99, bank $C
-; $99 ≤ index,       bank $D
-	ld a, [wcf91] ; XXX name for this ram location
-	ld b, a
-	cp MEW
-	ld a, BANK(MewPicFront)
-	jr z, .GotBank
-	ld a, b
+	ld bc,wMonHeader
+	add hl,bc
+	ld a,[hli]
+	ld [wSpriteInputPtr],a    ; fetch sprite input pointer
+	ld a,[hl]
+	ld [wSpriteInputPtr+1],a
+	ld a,[wcf91] ; XXX name for this ram location
 	cp FOSSIL_KABUTOPS
-	ld a, BANK(FossilKabutopsPic)
-	jr z, .GotBank
-	ld a, b
-	cp TANGELA + 1
-	ld a, BANK(TangelaPicFront)
-	jr c, .GotBank
-	ld a, b
-	cp MOLTRES + 1
-	ld a, BANK(MoltresPicFront)
-	jr c, .GotBank
-	ld a, b
-	cp BEEDRILL + 2
-	ld a, BANK(BeedrillPicFront)
-	jr c, .GotBank
-	ld a, b
-	cp STARMIE + 1
-	ld a, BANK(StarmiePicFront)
-	jr c, .GotBank
-	ld a, BANK(VictreebelPicFront)
+	jr z,.RecallBank
+	cp FOSSIL_AERODACTYL
+	jr z,.RecallBank
+	cp MON_GHOST
+	jr z,.RecallBank
+	ld a,[wMonHPicBank]
+	jr .GotBank
+.RecallBank
+	ld a,BANK(FossilKabutopsPic)
 .GotBank
 	jp UncompressSpriteData
 
@@ -763,6 +740,7 @@ LoadMonFrontSprite::
 	call UncompressMonSprite
 	ld hl, wMonHSpriteDim
 	ld a, [hli]
+LoadUncompressedBackSprite:
 	ld c, a
 	pop de
 	; fall through
@@ -934,7 +912,7 @@ UpdateSprites::
 	ld [MBC1RomBank], a
 	ret
 
-INCLUDE "data/mart_inventories.asm"
+;INCLUDE "data/mart_inventories.asm"
 
 TextScriptEndingChar::
 	db "@"
@@ -1496,6 +1474,11 @@ DisplayListMenuIDLoop::
 	call GetItemPrice
 	pop hl
 	ld a, [wListMenuID]
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;needed to make Mateo's move deleter/relearner work
+	cp a, MOVESLISTMENU
+	jr z, .skipStoringItemName
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	cp ITEMLISTMENU
 	jr nz, .skipGettingQuantity
 ; if it's an item menu
@@ -1522,6 +1505,7 @@ DisplayListMenuIDLoop::
 .storeChosenEntry ; store the menu entry that the player chose and return
 	ld de, wcd6d
 	call CopyStringToCF4B ; copy name to wcf4b
+.skipStoringItemName	;skip here if skipping storing item name
 	ld a, CHOSE_MENU_ITEM
 	ld [wMenuExitMethod], a
 	ld a, [wCurrentMenuItem]
@@ -2139,6 +2123,75 @@ DisplayTextBoxID::
 	ld a, b
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a
+	ret
+
+;gbcnote - new functions
+UpdateGBCPal_BGP::
+	push af
+	ld a, [hGBC]
+	and a
+	jr z, .notGBC
+	push bc
+	push de
+	push hl
+	ld a, [rBGP]
+	ld b, a
+	ld a, [wLastBGP]
+	cp b
+	jr z, .noChangeInBGP
+	callba _UpdateGBCPal_BGP
+.noChangeInBGP
+	pop hl
+	pop de
+	pop bc
+.notGBC
+	pop af
+	ret
+
+UpdateGBCPal_OBP0::
+	push af
+	ld a, [hGBC]
+	and a
+	jr z, .notGBC
+	push bc
+	push de
+	push hl
+	ld a, [rOBP0]
+	ld b, a
+	ld a, [wLastOBP0]
+	cp b
+	jr z, .noChangeInOBP0
+	ld d, CONVERT_OBP0
+	callba _UpdateGBCPal_OBP
+.noChangeInOBP0
+	pop hl
+	pop de
+	pop bc
+.notGBC
+	pop af
+	ret
+
+UpdateGBCPal_OBP1::
+	push af
+	ld a, [hGBC]
+	and a
+	jr z, .notGBC
+	push bc
+	push de
+	push hl
+	ld a, [rOBP1]
+	ld b, a
+	ld a, [wLastOBP1]
+	cp b
+	jr z, .noChangeInOBP1
+	ld d, CONVERT_OBP1
+	callba _UpdateGBCPal_OBP
+.noChangeInOBP1
+	pop hl
+	pop de
+	pop bc
+.notGBC
+	pop af
 	ret
 
 ; not zero if an NPC movement script is running, the player character is
@@ -4480,6 +4533,9 @@ GBPalNormal::
 	ld [rBGP], a
 	ld a, %11010000 ; 3100
 	ld [rOBP0], a
+	call UpdateGBCPal_BGP
+	call UpdateGBCPal_OBP0
+	call UpdateGBCPal_OBP1
 	ret
 
 GBPalWhiteOut::
@@ -4488,6 +4544,9 @@ GBPalWhiteOut::
 	ld [rBGP], a
 	ld [rOBP0], a
 	ld [rOBP1], a
+	call UpdateGBCPal_BGP
+	call UpdateGBCPal_OBP0
+	call UpdateGBCPal_OBP1
 	ret
 
 

@@ -578,12 +578,15 @@ wDexRatingNumMonsOwned:: ; cc5c
 	ds 1
 
 wDexRatingText:: ; cc5d
+wTrainerCardBadgeAttributes:: ; cc5d
+;gbcnote - modified to match yellow
 	ds 1
 
 wSlotMachineSavedROMBank:: ; cc5e
 ; ROM back to return to when the player is done with the slot machine
-	ds 1
+  ds 1
 
+wMoveBuffer:: ; Move Buffer stuff for Mateo's code
 	ds 26
 
 wAnimPalette:: ; cc79
@@ -1387,7 +1390,8 @@ wScriptedNPCWalkCounter:: ; cf18
 
 	ds 1
 
-wGBC:: ; cf1a
+;gbcnote - moved to hram
+;wGBC:: ; cf1a
 	ds 1
 
 wOnSGB:: ; cf1b
@@ -1426,7 +1430,10 @@ wPalPacket:: ; cf2d
 
 wPartyMenuBlkPacket:: ; cf2e
 ; $30 bytes
-	ds 29
+	ds 9
+;gbcnote - modified to match yellow
+wPartyHPBarAttributes:: ; cf36
+	ds 20
 
 wExpAmountGained:: ; cf4b
 ; 2-byte big-endian number
@@ -2060,8 +2067,10 @@ wMonHGrowthRate:: ; d0cb
 
 wMonHLearnset:: ; d0cc
 ; bit field
-	flag_array 50 + 5
-	ds 1
+    flag_array 50 + 5
+
+wMonHPicBank:: ; d0d3
+	   ds 1
 
 wSavedTilesetType:: ; d0d4
 ; saved at the start of a battle and then written back at the end of the battle
@@ -2281,6 +2290,11 @@ wEvoStoneItemID:: ; d156
 	ds 1
 
 wSavedNPCMovementDirections2Index:: ; d157
+	ds 1
+
+wIsTrainerBattle::
+	ds 1
+wWasTrainerBattle::
 	ds 1
 
 wPlayerName:: ; d158
@@ -2866,8 +2880,9 @@ wRoute5GateCurScript:: ; d662
 wPowerPlantCurScript:: ; d663
 wRoute7GateCurScript:: ; d663
 ; overload
-	ds 1
-	ds 1
+  ds 1
+wRoute1CurScript::
+  ds 1
 wSSAnne2FCurScript:: ; d665
 	ds 1
 wSeafoamIslandsB3FCurScript:: ; d666
@@ -2882,7 +2897,20 @@ wRoute18Gate1FCurScript:: ; d669
 	ds 78
 wGameProgressFlagsEnd::
 
-	ds 56
+wGBCBasePalPointers::
+	ds NUM_ACTIVE_PALS * 2 ; 8 bytes
+wGBCPal::
+	ds PAL_SIZE ; 8 bytes
+wLastBGP::
+	ds 1
+wLastOBP0::
+	ds 1
+wLastOBP1::
+	ds 1
+wBGPPalsBuffer::
+	ds NUM_ACTIVE_PALS * PAL_SIZE ;32 bytes
+
+	ds 5
 
 wObtainedHiddenItemsFlags::
 	ds 14
@@ -2960,7 +2988,10 @@ wWhichDungeonWarp:: ; d71e
 wUnusedD71F:: ; d71f
 	ds 1
 
-	ds 8
+wLowHealthTonePairs::	; in battle, used as a counter for low hp alarm tone pairs
+	ds 1
+
+	ds 7
 
 wd728:: ; d728
 ; bit 0: using Strength outside of battle

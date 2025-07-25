@@ -3,6 +3,7 @@ CeladonMart1F_Script:
 
 CeladonMart1F_TextPointers:
 	dw CeladonMart1Text1
+	dw CeladonMartTrader
 	dw CeladonMart1Text2
 	dw CeladonMart1Text3
 
@@ -17,3 +18,10 @@ CeladonMart1Text2:
 CeladonMart1Text3:
 	TX_FAR _CeladonMart1Text3
 	db "@"
+
+CeladonMartTrader:
+	TX_ASM
+	ld a, $a
+	ld [wWhichTrade], a
+	predef DoInGameTradeDialogue
+	jp TextScriptEnd

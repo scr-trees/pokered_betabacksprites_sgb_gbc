@@ -10,11 +10,12 @@ CeladonMart1F_Object:
 	warp 1, 1, 0, CELADON_MART_ELEVATOR
 
 	db 2 ; signs
-	sign 11, 4, 2 ; CeladonMart1Text2
-	sign 14, 1, 3 ; CeladonMart1Text3
+	sign 11, 4, 3 ; CeladonMart1Text2
+	sign 14, 1, 4 ; CeladonMart1Text3
 
-	db 1 ; objects
+	db 2 ; objects
 	object SPRITE_CABLE_CLUB_WOMAN, 8, 3, STAY, DOWN, 1 ; person
+	object SPRITE_GAMEBOY_KID, 4, 2, STAY, DOWN, 2 ; person
 
 	; warp-to
 	warp_to 2, 7, CELADON_MART_1F_WIDTH

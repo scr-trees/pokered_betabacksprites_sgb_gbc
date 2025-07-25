@@ -11,8 +11,7 @@ Route9Mons:
 		db 17,SPEAROW
 		db 13,EKANS
 		db 17,EKANS
-	ENDC
-	IF DEF(_BLUE)
+	ELSE
 		db 16,RATTATA
 		db 16,SPEAROW
 		db 14,RATTATA

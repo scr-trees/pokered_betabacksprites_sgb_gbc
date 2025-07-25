@@ -53,7 +53,7 @@ HallofFameRoomScript2:
 	dec b
 	jr nz, .delayLoop
 	call WaitForTextScrollButtonPress
-	jp Init
+	jp SoftReset
 
 HallofFameRoomScript0:
 	ld a, $ff
@@ -97,6 +97,9 @@ HallofFameRoomScript1:
 	ld a, HS_CERULEAN_CAVE_GUY
 	ld [wMissableObjectIndex], a
 	predef HideObject
+	ld a, HS_ROUTE_1_OAK
+	ld [wMissableObjectIndex], a
+	predef ShowObject
 	ld a, $2
 	ld [wHallOfFameCurScript], a
 	ret

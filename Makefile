@@ -1,7 +1,8 @@
-roms := pokered.gbc pokeblue.gbc
+roms := pokered.gb pokeblue.gb pokebluejp.gb
 
 pokered_obj := audio_red.o main_red.o text_red.o wram_red.o
 pokeblue_obj := audio_blue.o main_blue.o text_blue.o wram_blue.o
+pokebluejp_obj := audio_bluejp.o main_bluejp.o text_bluejp.o wram_bluejp.o
 
 
 ### Build tools
@@ -21,23 +22,24 @@ RGBLINK ?= $(RGBDS)rgblink
 .SECONDEXPANSION:
 .PRECIOUS:
 .SECONDARY:
-.PHONY: all red blue clean tidy compare tools
+.PHONY: all red blue bluejp clean tidy compare tools
 
 all: $(roms)
-red: pokered.gbc
-blue: pokeblue.gbc
+red: pokered.gb
+blue: pokeblue.gb
+bluejp: pokebluejp.gb
 
 # For contributors to make sure a change didn't affect the contents of the rom.
 compare: $(roms)
 	@$(MD5) roms.md5
 
 clean:
-	rm -f $(roms) $(pokered_obj) $(pokeblue_obj) $(roms:.gbc=.sym)
+	rm -f $(roms) $(pokered_obj) $(pokeblue_obj) $(pokebluejp_obj) $(roms:.gb=.sym)
 	find . \( -iname '*.1bpp' -o -iname '*.2bpp' -o -iname '*.pic' \) -exec rm {} +
 	$(MAKE) clean -C tools/
 
 tidy:
-	rm -f $(roms) $(pokered_obj) $(pokeblue_obj) $(roms:.gbc=.sym)
+	rm -f $(roms) $(pokered_obj) $(pokeblue_obj) $(pokebluejp_obj) $(roms:.gb=.sym)
 	$(MAKE) clean -C tools/
 
 tools:
@@ -61,10 +63,16 @@ $(pokered_obj): %_red.o: %.asm $$(dep)
 $(pokeblue_obj): %_blue.o: %.asm $$(dep)
 	$(RGBASM) -D _BLUE -h -o $@ $*.asm
 
-pokered_opt  = -jsv -k 01 -l 0x33 -m 0x13 -p 0 -r 03 -t "POKEMON RED"
-pokeblue_opt = -jsv -k 01 -l 0x33 -m 0x13 -p 0 -r 03 -t "POKEMON BLUE"
+%_bluejp.o: dep = $(shell tools/scan_includes $(@D)/$*.asm)
+$(pokebluejp_obj): %_bluejp.o: %.asm $$(dep)
+	$(RGBASM) -D _BLUE -D _BLUEJP -h -o $@ $*.asm
 
-%.gbc: $$(%_obj)
+#gbcnote - use cjsv to compile as GBC+DMG rom
+pokered_opt  = -cjsv -k 01 -l 0x33 -m 0x13 -p 0 -r 03 -t "POKEMON RED"
+pokeblue_opt = -cjsv -k 01 -l 0x33 -m 0x13 -p 0 -r 03 -t "POKEMON BLUE"
+pokebluejp_opt = -cjsv -k 01 -l 0x33 -m 0x13 -p 0 -r 03 -t "POKEMON BLUE"
+
+%.gb: $$(%_obj)
 	$(RGBLINK) -d -n $*.sym -l pokered.link -o $@ $^
 	$(RGBFIX) $($*_opt) $@
 	sort $*.sym -o $*.sym

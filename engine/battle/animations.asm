@@ -245,11 +245,13 @@ PlayAnimation:
 	push af
 	ld a, [wAnimPalette]
 	ld [rOBP0], a
+	call UpdateGBCPal_OBP0
 	call LoadAnimationTileset
 	call LoadSubanimation
 	call PlaySubanimation
 	pop af
 	ld [rOBP0], a
+	call UpdateGBCPal_OBP0
 .nextAnimationCommand
 	pop hl
 	jr .animationLoop
@@ -537,6 +539,8 @@ SetAnimationPalette:
 	ld [rOBP0], a
 	ld a, $6c
 	ld [rOBP1], a
+	call UpdateGBCPal_OBP0
+	call UpdateGBCPal_OBP1
 	ret
 .notSGB
 	ld a, $e4
@@ -544,6 +548,27 @@ SetAnimationPalette:
 	ld [rOBP0], a
 	ld a, $6c
 	ld [rOBP1], a
+	call UpdateGBCPal_OBP0
+	call UpdateGBCPal_OBP1
+	ret
+Func_78e98:
+	call SaveScreenTilesToBuffer2
+	xor a
+	ld [H_AUTOBGTRANSFERENABLED], a
+	call ClearScreen
+	ld h, vBGMap0 / $100
+	call WriteLowerByteOfBGMapAndEnableBGTransfer
+	call Delay3
+	xor a
+	ld [H_AUTOBGTRANSFERENABLED], a
+	call LoadScreenTilesFromBuffer2
+	ld h, vBGMap1 / $100
+
+WriteLowerByteOfBGMapAndEnableBGTransfer:
+	ld l, vBGMap0 & $ff
+	call BattleAnimCopyTileMapToVRAM
+	ld a, $1
+	ld [H_AUTOBGTRANSFERENABLED], a
 	ret
 
 PlaySubanimation:
@@ -733,6 +758,7 @@ DoBallTossSpecialEffects:
 	ld a, [rOBP0]
 	xor %00111100 ; complement colors 1 and 2
 	ld [rOBP0], a
+	call UpdateGBCPal_OBP0
 .skipFlashingEffect
 	ld a, [wSubAnimCounter]
 	cp 11 ; is it the beginning of the subanimation?
@@ -1102,6 +1128,7 @@ AnimationFlashScreenLong:
 	cp $01 ; is it the end of the palettes?
 	jr z, .endOfPalettes
 	ld [rBGP], a
+	call UpdateGBCPal_BGP
 	call FlashScreenLongDelay
 	jr .innerLoop
 .endOfPalettes
@@ -1164,14 +1191,17 @@ AnimationFlashScreen:
 	push af ; save initial palette
 	ld a, %00011011 ; 0, 1, 2, 3 (inverted colors)
 	ld [rBGP], a
+	call UpdateGBCPal_BGP
 	ld c, 2
 	call DelayFrames
 	xor a ; white out background
 	ld [rBGP], a
+	call UpdateGBCPal_BGP
 	ld c, 2
 	call DelayFrames
 	pop af
 	ld [rBGP], a ; restore initial palette
+	call UpdateGBCPal_BGP
 	ret
 
 AnimationDarkScreenPalette:
@@ -1217,6 +1247,7 @@ SetAnimationBGPalette:
 	ld a, c
 .next
 	ld [rBGP], a
+	call UpdateGBCPal_BGP
 	ret
 
 	ld b, $5
@@ -2686,12 +2717,14 @@ AnimationLeavesFalling:
 	push af
 	ld a, [wAnimPalette]
 	ld [rOBP0], a
+	call UpdateGBCPal_OBP0
 	ld d, $37 ; leaf tile
 	ld a, 3 ; number of leaves
 	ld [wNumFallingObjects], a
 	call AnimationFallingObjects
 	pop af
 	ld [rOBP0], a
+	call UpdateGBCPal_OBP0
 	ret
 
 AnimationPetalsFalling:
@@ -2867,6 +2900,14 @@ AnimationShakeEnemyHUD:
 	ld hl, vBGMap1 - $20 * 7
 	call BattleAnimCopyTileMapToVRAM
 
+; gbcnote - from pokemon yellow: update BGMap attributes
+	ld a, [hGBC]
+	and a
+	jr z, .notGBC
+	ld d, 13
+	callba LoadBGMapAttributes
+.notGBC
+
 ; Move the window so that the row below the enemy HUD (in BG map 0) lines up
 ; with the top row of the window on the screen. This makes it so that the window
 ; covers everything below the enemy HD with a copy that looks just like what
@@ -2900,6 +2941,15 @@ AnimationShakeEnemyHUD:
 	ld [hWY], a
 	ld hl, vBGMap1
 	call BattleAnimCopyTileMapToVRAM
+
+; gbcnote - from yellow version: update BGMap attributes
+	ld a, [hGBC]
+	and a
+	jr z, .notGBC2
+	ld d, 11
+	callba LoadBGMapAttributes
+.notGBC2
+
 	xor a
 	ld [hWY], a
 	call SaveScreenTilesToBuffer1

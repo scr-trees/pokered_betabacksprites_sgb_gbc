@@ -4,6 +4,7 @@ CinnabarLab_Script:
 
 CinnabarLab_TextPointers:
 	dw Lab1Text1
+	dw MoveDeleterText1
 	dw Lab1Text2
 	dw Lab1Text3
 	dw Lab1Text4

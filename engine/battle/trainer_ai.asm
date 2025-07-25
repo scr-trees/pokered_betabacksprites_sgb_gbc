@@ -397,7 +397,7 @@ TrainerAIPointers:
 	dbw 3,GenericAI
 	dbw 2,BlackbeltAI ; blackbelt
 	dbw 3,GenericAI
-	dbw 3,GenericAI
+	dbw 1,Sony3AI ; prof_oak
 	dbw 1,GenericAI ; chief
 	dbw 3,GenericAI
 	dbw 1,GiovanniAI ; giovanni

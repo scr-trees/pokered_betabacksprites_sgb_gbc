@@ -17,7 +17,7 @@ MapHSPointers:
 	dw MapHSXX
 	dw MapHS0A
 	dw MapHSXX
-	dw MapHSXX
+	dw MapHS0C
 	dw MapHS0D
 	dw MapHSXX
 	dw MapHS0F
@@ -573,5 +573,7 @@ MapHSA2:
 	db SEAFOAM_ISLANDS_B4F,$01,Hide
 	db SEAFOAM_ISLANDS_B4F,$02,Hide
 	db SEAFOAM_ISLANDS_B4F,$03,Show
+MapHS0C:
+  db ROUTE_1,$03,Hide ; PROF OAK fight. To test, change to Show. - PvK
 
 	db $FF,$01,Show

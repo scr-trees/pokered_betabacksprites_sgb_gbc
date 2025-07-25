@@ -1,6 +1,6 @@
 Route14Mons:
 	db $0F
-	IF DEF(_RED)
+	IF (DEF(_RED) || DEF(_BLUEJP))
 		db 24,ODDISH
 		db 26,PIDGEY
 		db 23,DITTO
@@ -11,8 +11,7 @@ Route14Mons:
 		db 30,GLOOM
 		db 28,PIDGEOTTO
 		db 30,PIDGEOTTO
-	ENDC
-	IF DEF(_BLUE)
+	ELSE
 		db 24,BELLSPROUT
 		db 26,PIDGEY
 		db 23,DITTO

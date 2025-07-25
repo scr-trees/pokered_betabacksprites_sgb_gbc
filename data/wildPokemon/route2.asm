@@ -7,8 +7,7 @@ Route2Mons:
 	db 5,PIDGEY
 	IF DEF(_RED)
 		db 3,WEEDLE
-	ENDC
-	IF DEF(_BLUE)
+	ELSE
 		db 3,CATERPIE
 	ENDC
 	db 2,RATTATA
@@ -16,8 +15,7 @@ Route2Mons:
 	IF DEF(_RED)
 		db 4,WEEDLE
 		db 5,WEEDLE
-	ENDC
-	IF DEF(_BLUE)
+	ELSE
 		db 4,CATERPIE
 		db 5,CATERPIE
 	ENDC

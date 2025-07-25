@@ -24,5 +24,5 @@ db 0 ; growth rate
 	tmlearn 28,31,32
 	tmlearn 34,39,40
 	tmlearn 44
-	tmlearn 50,53,54
-db 0 ; padding
+	tmlearn 50,53,54,55
+db BANK(PsyduckPicBack)
